@@ -1,8 +1,8 @@
-CellML Reader Pipeline
+**Semantic Annotation Pipeline**
 
 Pipeline otomatis untuk membaca variabel dari model CellML, mencari konteks di paper ilmiah, dan menghasilkan anotasi ontologi terstruktur.
 
-Prasyarat
+**Prasyarat**
 
 Python 3.12+
 Ollama dengan model qwen2.5:7b (atau llama3.3)
