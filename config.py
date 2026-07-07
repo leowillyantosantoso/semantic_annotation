@@ -1,5 +1,5 @@
 """
-Konfigurasi project.
+Project Configuration
 """
 
 import os
