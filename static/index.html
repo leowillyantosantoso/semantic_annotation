@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CellML Annotation Pipeline Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-width: 380px;
+            --radius: 12px;
+            --font-main: 'Outfit', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+            --backdrop: blur(16px);
+        }
+
+        .light-theme {
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: var(--backdrop);
+            z-index: 10;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), #ec4899);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-title h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn:hover {
+            background: var(--border-color);
+        }
+
+        /* LAYOUT CONTAINER */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR: TASK LIST */
+        .sidebar {
+            width: var(--sidebar-width);
+            border-right: 1px solid var(--border-color);
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 24px;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .task-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: transparent;
+            transition: background-color 0.2s ease;
+        }
+
+        .task-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+        }
+
+        .task-card.active::before {
+            background: var(--primary);
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            letter-spacing: -0.3px;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: rgba(148, 163, 184, 0.15); color: var(--text-secondary); }
+        .status-running { 
+            background: rgba(99, 102, 241, 0.15); 
+            color: var(--primary); 
+            animation: pulse-bg 1.5s infinite alternate;
+        }
+        .status-completed { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .status-failed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .task-paper {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+
+        .task-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar-bg {
+            background: rgba(255, 255, 255, 0.05);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #ec4899);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            font-family: var(--font-main);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: 1px solid var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* MAIN CONTENT AREA */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.3);
+            padding: 32px;
+            gap: 24px;
+        }
+
+        .dashboard-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            gap: 16px;
+        }
+
+        .dashboard-placeholder svg {
+            width: 64px;
+            height: 64px;
+            color: var(--border-color);
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .main-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .reprocess-dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: none;
+            flex-direction: column;
+            width: 220px;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: left;
+            background: transparent;
+            border: none;
+            width: 100%;
+            font-family: var(--font-main);
+            transition: background 0.15s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* GRID VIEW: VARIABLES */
+        .variables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            overflow-y: auto;
+            align-content: start;
+            flex: 1;
+            padding-bottom: 24px;
+        }
+
+        .variable-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .variable-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .var-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .var-name {
+            font-family: var(--font-code);
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .var-component {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .var-unit {
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: fit-content;
+            color: var(--text-secondary);
+        }
+
+        /* MODAL SCREEN */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-container {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modal-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-title p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.15s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .modal-actions {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.2);
+        }
+
+        /* DETAILS SECTION */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .info-value-code {
+            font-family: var(--font-code);
+            font-size: 0.95rem;
+            color: var(--primary);
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .panel-body {
+            padding: 16px;
+        }
+
+        .synonyms-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .keyword-badge {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            font-family: var(--font-code);
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .keyword-badge.textual {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+        }
+
+        .evidence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .evidence-item {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.01);
+            border-left: 3px solid var(--primary);
+            color: var(--text-secondary);
+        }
+
+        .evidence-item mark {
+            background: rgba(99, 102, 241, 0.3);
+            color: white;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* ONTOLOGY TREE / JSON */
+        .json-code {
+            font-family: var(--font-code);
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            max-height: 250px;
+        }
+
+        .error-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .error-banner h4 {
+            font-weight: 600;
+        }
+
+        /* ANIMATIONS */
+        @keyframes pulse-bg {
+            from { background-color: rgba(99, 102, 241, 0.1); }
+            to { background-color: rgba(99, 102, 241, 0.3); }
+        }
+
+        @keyframes modal-enter {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* DROPDOWN ARROW */
+        .arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid var(--text-primary);
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">C</div>
+            <div class="logo-title">
+                <h1>CellML Pipeline</h1>
+                <p>Ontology Annotation System</p>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 5a7 7 0 100 14 7 7 0 000-14z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="section-title">Models / Tasks</div>
+            <div id="tasks-list" style="display:flex; flex-direction:column; gap:12px;">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+
+        <main id="main-content">
+            <div class="dashboard-placeholder" id="placeholder-view">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                <p>Select a model from the left pane to view its annotation variables.</p>
+            </div>
+
+            <!-- Task Dashboard View (hidden by default) -->
+            <div id="task-view" style="display: none; flex-direction: column; gap: 24px; height: 100%;">
+                <div class="main-header">
+                    <div class="main-title">
+                        <h2 id="view-task-name">Noble 1962</h2>
+                        <p id="view-task-paper">Paper title description...</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="btn-run-task" onclick="runTask()">Run Task</button>
+                        <div class="reprocess-dropdown-container">
+                            <button class="btn btn-secondary" onclick="toggleDropdown(event)">
+                                Reprocess <span class="arrow-down" style="margin-left: 4px;"></span>
+                            </button>
+                            <div class="dropdown-menu" id="reprocess-dropdown">
+                                <button class="dropdown-item" onclick="reprocessTask('total')">Reprocess Total (Reset all)</button>
+                                <button class="dropdown-item" onclick="reprocessTask('process3')">Reprocess LLM Only (Process 3)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Variables / Current Channels</div>
+                <div class="variables-grid" id="variables-list">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: VARIABLE INSPECTOR -->
+    <div class="modal-overlay" id="var-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h3 id="modal-var-title">Variable i_Na</h3>
+                    <p id="modal-var-subtitle">Component: fast_sodium_current</p>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body-content">
+                <!-- Filled dynamically -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary btn-sm" onclick="reprocessVariable('stage2')">Reprocess stage 2 (PDF + LLM)</button>
+                <button class="btn btn-primary btn-sm" onclick="reprocessVariable('stage3')">Reprocess stage 3 (LLM Only)</button>
+                <button class="btn btn-secondary btn-sm" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTaskId = null;
+        let currentVarId = null;
+        let pollTimer = null;
+
+        // Fetch tasks on load
+        window.onload = function() {
+            fetchTasks();
+            pollTimer = setInterval(fetchTasks, 5000); // Poll tasks progress every 5s
+        };
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        function fetchTasks() {
+            fetch('/api/tasks')
+                .then(res => res.json())
+                .then(tasks => {
+                    const container = document.getElementById('tasks-list');
+                    container.innerHTML = '';
+                    tasks.forEach(task => {
+                        const card = document.createElement('div');
+                        card.className = `task-card ${currentTaskId === task.id ? 'active' : ''}`;
+                        card.onclick = () => selectTask(task.id);
+                        
+                        card.innerHTML = `
+                            <div class="task-header">
+                                <div class="task-name">${task.cellml_file}</div>
+                                <span class="status-badge status-${task.status}">${task.status}</span>
+                            </div>
+                            <div class="task-paper">${task.paper_title}</div>
+                            <div class="task-progress">
+                                <div class="progress-label">
+                                    <span>Progress</span>
+                                    <span>${task.stats.completed}/${task.stats.total} (${task.stats.progress}%)</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: ${task.stats.progress}%"></div>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+
+                    // Update currently viewed task variables if task is active
+                    if (currentTaskId !== null) {
+                        const activeTask = tasks.find(t => t.id === currentTaskId);
+                        if (activeTask) {
+                            document.getElementById('btn-run-task').disabled = activeTask.status === 'running';
+                            fetchVariables(currentTaskId);
+                        }
+                    }
+                });
+        }
+
+        function selectTask(taskId) {
+            currentTaskId = taskId;
+            
+            // Highlight active task card
+            document.querySelectorAll('.task-card').forEach(card => card.classList.remove('active'));
+            fetch('/api/tasks')
+                .then(res => res.json())
+                .then(tasks => {
+                    const task = tasks.find(t => t.id === taskId);
+                    if (task) {
+                        document.getElementById('placeholder-view').style.display = 'none';
+                        document.getElementById('task-view').style.display = 'flex';
+                        document.getElementById('view-task-name').innerText = task.cellml_file;
+                        document.getElementById('view-task-paper').innerText = task.paper_title;
+                        document.getElementById('btn-run-task').disabled = task.status === 'running';
+                        
+                        fetchVariables(taskId);
+                    }
+                });
+        }
+
+        function fetchVariables(taskId) {
+            fetch(`/api/tasks/${taskId}/variables`)
+                .then(res => res.json())
+                .then(variables => {
+                    const container = document.getElementById('variables-list');
+                    container.innerHTML = '';
+                    variables.forEach(v => {
+                        const card = document.createElement('div');
+                        card.className = 'variable-card';
+                        card.onclick = () => openModal(v.id);
+                        
+                        card.innerHTML = `
+                            <div class="var-header">
+                                <div class="var-name">${v.variable_name}</div>
+                                <span class="status-badge status-${v.status}">${v.status}</span>
+                            </div>
+                            <div class="var-component" title="${v.component_name}">Comp: ${v.component_name}</div>
+                        `;
+                        container.appendChild(card);
+                    });
+                });
+        }
+
+        function runTask() {
+            if (!currentTaskId) return;
+            fetch(`/api/tasks/${currentTaskId}/run`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    fetchTasks();
+                });
+        }
+
+        function toggleDropdown(e) {
+            e.stopPropagation();
+            const el = document.getElementById('reprocess-dropdown');
+            el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Close dropdown on clicking outside
+        window.onclick = function() {
+            document.getElementById('reprocess-dropdown').style.display = 'none';
+        };
+
+        function reprocessTask(type) {
+            if (!currentTaskId) return;
+            fetch(`/api/tasks/${currentTaskId}/reprocess`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type })
+            })
+            .then(res => res.json())
+            .then(() => fetchTasks());
+        }
+
+        function openModal(varId) {
+            currentVarId = varId;
+            const modal = document.getElementById('var-modal');
+            modal.style.display = 'flex';
+            
+            fetch(`/api/variables/${varId}/details`)
+                .then(res => res.json())
+                .then(v => {
+                    document.getElementById('modal-var-title').innerText = `Variable: ${v.variable_name}`;
+                    document.getElementById('modal-var-subtitle').innerText = `Component: ${v.component_name}`;
+                    
+                    const body = document.getElementById('modal-body-content');
+                    body.innerHTML = '';
+
+                    // 1. Info box
+                    const unit = v.process1_data ? v.process1_data.unit : 'N/A';
+                    const infoGrid = document.createElement('div');
+                    infoGrid.className = 'info-grid';
+                    infoGrid.innerHTML = `
+                        <div class="info-box">
+                            <div class="info-label">Variable</div>
+                            <div class="info-value-code">${v.variable_name}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">Component</div>
+                            <div class="info-value">${v.component_name}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">Unit</div>
+                            <div class="info-value">${unit}</div>
+                        </div>
+                    `;
+                    body.appendChild(infoGrid);
+
+                    // 2. Error Banner if failed
+                    if (v.status === 'failed' && v.error_message) {
+                        const errorBanner = document.createElement('div');
+                        errorBanner.className = 'error-banner';
+                        errorBanner.innerHTML = `
+                            <h4>Execution Error (Stage 3 Failed)</h4>
+                            <p>${v.error_message}</p>
+                        `;
+                        body.appendChild(errorBanner);
+                    }
+
+                    // 3. Synonyms Panel
+                    if (v.process2_data && v.process2_data.synonyms) {
+                        const synPanel = document.createElement('div');
+                        synPanel.className = 'panel';
+                        synPanel.innerHTML = `
+                            <div class="panel-header">Generated Synonyms (Process 2)</div>
+                            <div class="panel-body synonyms-container">
+                                <div>
+                                    <div class="info-label" style="margin-bottom:8px">Symbolic</div>
+                                    <div class="badge-list">
+                                        ${v.process2_data.synonyms.symbolic.map(s => `<span class="keyword-badge">${s}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="info-label" style="margin-bottom:8px">Textual</div>
+                                    <div class="badge-list">
+                                        ${v.process2_data.synonyms.textual.map(s => `<span class="keyword-badge textual">${s}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        body.appendChild(synPanel);
+                    }
+
+                    // 4. Evidence sentences Panel
+                    if (v.process2_data && v.process2_data.contexts) {
+                        const evidencePanel = document.createElement('div');
+                        evidencePanel.className = 'panel';
+                        const items = v.process2_data.contexts.map(ctx => {
+                            // Highlight the matching keyword in the sentence
+                            const regex = new RegExp(`\\b(${ctx.keyword})\\b`, 'gi');
+                            const highlighted = ctx.sentence.replace(regex, '<mark>$1</mark>');
+                            return `<div class="evidence-item">${highlighted}</div>`;
+                        }).join('');
+                        
+                        evidencePanel.innerHTML = `
+                            <div class="panel-header">Matching Evidence Sentences in PDF (${v.process2_data.contexts.length} found)</div>
+                            <div class="panel-body">
+                                <div class="evidence-list">
+                                    ${items || '<div style="color:var(--text-secondary);font-size:0.85rem">No matching evidence sentences found.</div>'}
+                                </div>
+                            </div>
+                        `;
+                        body.appendChild(evidencePanel);
+                    }
+
+                    // 5. Final Annotation JSON
+                    if (v.process3_data) {
+                        const jsonPanel = document.createElement('div');
+                        jsonPanel.className = 'panel';
+                        jsonPanel.innerHTML = `
+                            <div class="panel-header">Final Ontology Annotations (Process 3)</div>
+                            <div class="panel-body">
+                                <pre class="json-code"><code>${JSON.stringify(v.process3_data, null, 2)}</code></pre>
+                            </div>
+                        `;
+                        body.appendChild(jsonPanel);
+                    }
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('var-modal').style.display = 'none';
+            currentVarId = null;
+        }
+
+        function reprocessVariable(type) {
+            if (!currentVarId) return;
+            fetch(`/api/variables/${currentVarId}/reprocess`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type })
+            })
+            .then(res => res.json())
+            .then(() => {
+                closeModal();
+                fetchTasks();
+            });
+        }
+    </script>
+</body>
+</html>
