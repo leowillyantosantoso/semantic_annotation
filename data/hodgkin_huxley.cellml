@@ -1,0 +1,1197 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model cmeta:id="hodgkin_huxley_squid_axon_1952" name="hodgkin_huxley_squid_axon_1952" xmlns="http://www.cellml.org/cellml/1.1#" xmlns:cellml="http://www.cellml.org/cellml/1.1#" xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+    <units name="millisecond">
+        <unit prefix="milli" units="second"/>
+    </units>
+    <units name="milliS_per_cm2">
+        <unit prefix="milli" units="siemens"/>
+        <unit exponent="-2.0" prefix="centi" units="metre"/>
+    </units>
+    <units name="microF_per_cm2">
+        <unit prefix="micro" units="farad"/>
+        <unit exponent="-2.0" prefix="centi" units="metre"/>
+    </units>
+    <units name="microA_per_cm2">
+        <unit prefix="micro" units="ampere"/>
+        <unit exponent="-2.0" prefix="centi" units="metre"/>
+    </units>
+    <units name="per_millisecond">
+        <unit exponent="-1.0" prefix="milli" units="second"/>
+    </units>
+    <units name="millivolt">
+        <unit prefix="milli" units="volt"/>
+    </units>
+    <component name="membrane">
+        <variable cmeta:id="membrane.i_K" name="i_K" public_interface="in" units="microA_per_cm2"/>
+        <variable cmeta:id="membrane.i_Stim" name="i_Stim" units="microA_per_cm2"/>
+        <variable cmeta:id="membrane.time" name="time" public_interface="in" units="millisecond"/>
+        <variable cmeta:id="membrane_V" name="V" public_interface="out" units="millivolt"/>
+        <variable cmeta:id="membrane.i_L" name="i_L" public_interface="in" units="microA_per_cm2"/>
+        <variable cmeta:id="membrane.i_Na" name="i_Na" public_interface="in" units="microA_per_cm2"/>
+        <variable cmeta:id="membrane.E_R" name="E_R" public_interface="out" units="millivolt"/>
+        <variable cmeta:id="membrane.Cm" name="Cm" units="microF_per_cm2"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>i_Stim</ci>
+                <piecewise>
+                    <piece>
+                        <cn cellml:units="microA_per_cm2">20</cn>
+                        <apply>
+                            <and/>
+                            <apply>
+                                <geq/>
+                                <ci>time</ci>
+                                <cn cellml:units="millisecond">10</cn>
+                            </apply>
+                            <apply>
+                                <leq/>
+                                <ci>time</ci>
+                                <cn cellml:units="millisecond">10.5</cn>
+                            </apply>
+                        </apply>
+                    </piece>
+                    <otherwise>
+                        <cn cellml:units="microA_per_cm2">0</cn>
+                    </otherwise>
+                </piecewise>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>V</ci>
+                </apply>
+                <apply>
+                    <divide/>
+                    <apply>
+                        <minus/>
+                        <apply>
+                            <plus/>
+                            <apply>
+                                <minus/>
+                                <ci>i_Stim</ci>
+                            </apply>
+                            <ci>i_Na</ci>
+                            <ci>i_K</ci>
+                            <ci>i_L</ci>
+                        </apply>
+                    </apply>
+                    <ci>Cm</ci>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <component name="environment">
+        <variable cmeta:id="environment_time" name="time" public_interface="out" units="millisecond"/>
+    </component>
+    <component name="sodium_channel_h_gate">
+        <variable cmeta:id="sodium_channel_h_gate.V" name="V" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="sodium_channel_h_gate.beta_h" name="beta_h" units="per_millisecond"/>
+        <variable cmeta:id="sodium_channel_h_gate.h" name="h" public_interface="out" units="dimensionless"/>
+        <variable cmeta:id="sodium_channel_h_gate.alpha_h" name="alpha_h" units="per_millisecond"/>
+        <variable cmeta:id="sodium_channel_h_gate.time" name="time" public_interface="in" units="millisecond"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>alpha_h</ci>
+                <apply>
+                    <times/>
+                    <cn cellml:units="per_millisecond">0.07</cn>
+                    <apply>
+                        <exp/>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <minus/>
+                                <apply>
+                                    <plus/>
+                                    <ci>V</ci>
+                                    <cn cellml:units="millivolt">75</cn>
+                                </apply>
+                            </apply>
+                            <cn cellml:units="millivolt">20</cn>
+                        </apply>
+                    </apply>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>beta_h</ci>
+                <apply>
+                    <divide/>
+                    <cn cellml:units="per_millisecond">1</cn>
+                    <apply>
+                        <plus/>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci>V</ci>
+                                        <cn cellml:units="millivolt">45</cn>
+                                    </apply>
+                                </apply>
+                                <cn cellml:units="millivolt">10</cn>
+                            </apply>
+                        </apply>
+                        <cn cellml:units="dimensionless">1</cn>
+                    </apply>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>h</ci>
+                </apply>
+                <apply>
+                    <minus/>
+                    <apply>
+                        <times/>
+                        <ci>alpha_h</ci>
+                        <apply>
+                            <minus/>
+                            <cn cellml:units="dimensionless">1</cn>
+                            <ci>h</ci>
+                        </apply>
+                    </apply>
+                    <apply>
+                        <times/>
+                        <ci>beta_h</ci>
+                        <ci>h</ci>
+                    </apply>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <component name="potassium_channel_n_gate">
+        <variable cmeta:id="potassium_channel_n_gate.beta_n" name="beta_n" units="per_millisecond"/>
+        <variable cmeta:id="potassium_channel_n_gate.alpha_n" name="alpha_n" units="per_millisecond"/>
+        <variable cmeta:id="potassium_channel_n_gate.n" name="n" public_interface="out" units="dimensionless"/>
+        <variable cmeta:id="potassium_channel_n_gate.V" name="V" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="potassium_channel_n_gate.time" name="time" public_interface="in" units="millisecond"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>alpha_n</ci>
+                <apply>
+                    <divide/>
+                    <apply>
+                        <times/>
+                        <apply>
+                            <minus/>
+                            <cn cellml:units="per_millivolt_millisecond">0.01</cn>
+                        </apply>
+                        <apply>
+                            <plus/>
+                            <ci>V</ci>
+                            <cn cellml:units="millivolt">65</cn>
+                        </apply>
+                    </apply>
+                    <apply>
+                        <minus/>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci>V</ci>
+                                        <cn cellml:units="millivolt">65</cn>
+                                    </apply>
+                                </apply>
+                                <cn cellml:units="millivolt">10</cn>
+                            </apply>
+                        </apply>
+                        <cn cellml:units="dimensionless">1</cn>
+                    </apply>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>beta_n</ci>
+                <apply>
+                    <times/>
+                    <cn cellml:units="per_millisecond">0.125</cn>
+                    <apply>
+                        <exp/>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <plus/>
+                                <ci>V</ci>
+                                <cn cellml:units="millivolt">75</cn>
+                            </apply>
+                            <cn cellml:units="millivolt">80</cn>
+                        </apply>
+                    </apply>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>n</ci>
+                </apply>
+                <apply>
+                    <minus/>
+                    <apply>
+                        <times/>
+                        <ci>alpha_n</ci>
+                        <apply>
+                            <minus/>
+                            <cn cellml:units="dimensionless">1</cn>
+                            <ci>n</ci>
+                        </apply>
+                    </apply>
+                    <apply>
+                        <times/>
+                        <ci>beta_n</ci>
+                        <ci>n</ci>
+                    </apply>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <component name="leakage_current">
+        <variable cmeta:id="leakage_current.E_L" name="E_L" units="millivolt"/>
+        <variable cmeta:id="leakage_current.g_L" name="g_L" units="milliS_per_cm2"/>
+        <variable cmeta:id="leakage_current.time" name="time" public_interface="in" units="millisecond"/>
+        <variable cmeta:id="leakage_current_i_L" name="i_L" public_interface="out" units="microA_per_cm2"/>
+        <variable cmeta:id="leakage_current.E_R" name="E_R" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="leakage_current.V" name="V" public_interface="in" units="millivolt"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>E_L</ci>
+                <apply>
+                    <plus/>
+                    <ci>E_R</ci>
+                    <cn cellml:units="millivolt">10.613</cn>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>i_L</ci>
+                <apply>
+                    <times/>
+                    <ci>g_L</ci>
+                    <apply>
+                        <minus/>
+                        <ci>V</ci>
+                        <ci>E_L</ci>
+                    </apply>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <component name="sodium_channel_m_gate">
+        <variable cmeta:id="sodium_channel_m_gate.beta_m" name="beta_m" units="per_millisecond"/>
+        <variable cmeta:id="sodium_channel_m_gate.alpha_m" name="alpha_m" units="per_millisecond"/>
+        <variable cmeta:id="sodium_channel_m_gate.time" name="time" public_interface="in" units="millisecond"/>
+        <variable cmeta:id="sodium_channel_m_gate.V" name="V" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="sodium_channel_m_gate.m" name="m" public_interface="out" units="dimensionless"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>alpha_m</ci>
+                <apply>
+                    <divide/>
+                    <apply>
+                        <times/>
+                        <apply>
+                            <minus/>
+                            <cn cellml:units="per_millivolt_millisecond">0.1</cn>
+                        </apply>
+                        <apply>
+                            <plus/>
+                            <ci>V</ci>
+                            <cn cellml:units="millivolt">50</cn>
+                        </apply>
+                    </apply>
+                    <apply>
+                        <minus/>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci>V</ci>
+                                        <cn cellml:units="millivolt">50</cn>
+                                    </apply>
+                                </apply>
+                                <cn cellml:units="millivolt">10</cn>
+                            </apply>
+                        </apply>
+                        <cn cellml:units="dimensionless">1</cn>
+                    </apply>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>beta_m</ci>
+                <apply>
+                    <times/>
+                    <cn cellml:units="per_millisecond">4</cn>
+                    <apply>
+                        <exp/>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <minus/>
+                                <apply>
+                                    <plus/>
+                                    <ci>V</ci>
+                                    <cn cellml:units="millivolt">75</cn>
+                                </apply>
+                            </apply>
+                            <cn cellml:units="millivolt">18</cn>
+                        </apply>
+                    </apply>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>m</ci>
+                </apply>
+                <apply>
+                    <minus/>
+                    <apply>
+                        <times/>
+                        <ci>alpha_m</ci>
+                        <apply>
+                            <minus/>
+                            <cn cellml:units="dimensionless">1</cn>
+                            <ci>m</ci>
+                        </apply>
+                    </apply>
+                    <apply>
+                        <times/>
+                        <ci>beta_m</ci>
+                        <ci>m</ci>
+                    </apply>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <component name="sodium_channel">
+        <variable cmeta:id="sodium_channel.m" name="m" private_interface="in" units="dimensionless"/>
+        <variable cmeta:id="sodium_channel.E_R" name="E_R" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="sodium_channel.time" name="time" private_interface="out" public_interface="in" units="millisecond"/>
+        <variable cmeta:id="sodium_channel.g_Na" name="g_Na" units="milliS_per_cm2"/>
+        <variable cmeta:id="sodium_channel.E_Na" name="E_Na" units="millivolt"/>
+        <variable cmeta:id="sodium_channel.V" name="V" private_interface="out" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="sodium_channel.h" name="h" private_interface="in" units="dimensionless"/>
+        <variable cmeta:id="sodium_channel_i_Na" name="i_Na" public_interface="out" units="microA_per_cm2"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>E_Na</ci>
+                <apply>
+                    <plus/>
+                    <ci>E_R</ci>
+                    <cn cellml:units="millivolt">115</cn>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>i_Na</ci>
+                <apply>
+                    <times/>
+                    <ci>g_Na</ci>
+                    <apply>
+                        <power/>
+                        <ci>m</ci>
+                        <cn cellml:units="dimensionless">3</cn>
+                    </apply>
+                    <ci>h</ci>
+                    <apply>
+                        <minus/>
+                        <ci>V</ci>
+                        <ci>E_Na</ci>
+                    </apply>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <component name="potassium_channel">
+        <variable cmeta:id="potassium_channel.E_K" name="E_K" units="millivolt"/>
+        <variable cmeta:id="potassium_channel.g_K" name="g_K" units="milliS_per_cm2"/>
+        <variable cmeta:id="potassium_channel.n" name="n" private_interface="in" units="dimensionless"/>
+        <variable cmeta:id="potassium_channel.time" name="time" private_interface="out" public_interface="in" units="millisecond"/>
+        <variable cmeta:id="potassium_channel.E_R" name="E_R" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="potassium_channel.V" name="V" private_interface="out" public_interface="in" units="millivolt"/>
+        <variable cmeta:id="potassium_channel_i_K" name="i_K" public_interface="out" units="microA_per_cm2"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <ci>E_K</ci>
+                <apply>
+                    <minus/>
+                    <ci>E_R</ci>
+                    <cn cellml:units="millivolt">12</cn>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>i_K</ci>
+                <apply>
+                    <times/>
+                    <ci>g_K</ci>
+                    <apply>
+                        <power/>
+                        <ci>n</ci>
+                        <cn cellml:units="dimensionless">4</cn>
+                    </apply>
+                    <apply>
+                        <minus/>
+                        <ci>V</ci>
+                        <ci>E_K</ci>
+                    </apply>
+                </apply>
+            </apply>
+        </math>
+    </component>
+    <group>
+        <relationship_ref relationship="encapsulation"/>
+        <component_ref component="sodium_channel">
+            <component_ref component="sodium_channel_m_gate"/>
+            <component_ref component="sodium_channel_h_gate"/>
+        </component_ref>
+        <component_ref component="potassium_channel">
+            <component_ref component="potassium_channel_n_gate"/>
+        </component_ref>
+    </group>
+    <group>
+        <relationship_ref relationship="containment"/>
+        <component_ref component="membrane">
+            <component_ref component="sodium_channel">
+                <component_ref component="sodium_channel_m_gate"/>
+                <component_ref component="sodium_channel_h_gate"/>
+            </component_ref>
+            <component_ref component="leakage_current"/>
+            <component_ref component="potassium_channel">
+                <component_ref component="potassium_channel_n_gate"/>
+            </component_ref>
+        </component_ref>
+    </group>
+    <connection>
+        <map_components component_1="sodium_channel_m_gate" component_2="sodium_channel"/>
+        <map_variables variable_1="m" variable_2="m"/>
+    </connection>
+    <connection>
+        <map_components component_1="potassium_channel" component_2="membrane"/>
+        <map_variables variable_1="i_K" variable_2="i_K"/>
+    </connection>
+    <connection>
+        <map_components component_1="potassium_channel" component_2="potassium_channel_n_gate"/>
+        <map_variables variable_1="V" variable_2="V"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <connection>
+        <map_components component_1="environment" component_2="sodium_channel"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <connection>
+        <map_components component_1="leakage_current" component_2="membrane"/>
+        <map_variables variable_1="i_L" variable_2="i_L"/>
+    </connection>
+    <connection>
+        <map_components component_1="sodium_channel" component_2="sodium_channel_h_gate"/>
+        <map_variables variable_1="V" variable_2="V"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <connection>
+        <map_components component_1="membrane" component_2="potassium_channel"/>
+        <map_variables variable_1="V" variable_2="V"/>
+        <map_variables variable_1="E_R" variable_2="E_R"/>
+    </connection>
+    <connection>
+        <map_components component_1="membrane" component_2="sodium_channel"/>
+        <map_variables variable_1="V" variable_2="V"/>
+        <map_variables variable_1="E_R" variable_2="E_R"/>
+    </connection>
+    <connection>
+        <map_components component_1="sodium_channel" component_2="membrane"/>
+        <map_variables variable_1="i_Na" variable_2="i_Na"/>
+    </connection>
+    <connection>
+        <map_components component_1="environment" component_2="membrane"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <connection>
+        <map_components component_1="sodium_channel" component_2="sodium_channel_m_gate"/>
+        <map_variables variable_1="V" variable_2="V"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <connection>
+        <map_components component_1="potassium_channel_n_gate" component_2="potassium_channel"/>
+        <map_variables variable_1="n" variable_2="n"/>
+    </connection>
+    <connection>
+        <map_components component_1="sodium_channel_h_gate" component_2="sodium_channel"/>
+        <map_variables variable_1="h" variable_2="h"/>
+    </connection>
+    <connection>
+        <map_components component_1="environment" component_2="leakage_current"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <connection>
+        <map_components component_1="membrane" component_2="leakage_current"/>
+        <map_variables variable_1="V" variable_2="V"/>
+        <map_variables variable_1="E_R" variable_2="E_R"/>
+    </connection>
+    <connection>
+        <map_components component_1="environment" component_2="potassium_channel"/>
+        <map_variables variable_1="time" variable_2="time"/>
+    </connection>
+    <documentation xmlns="http://cellml.org/tmp-documentation">
+        <article xmlns="http://cellml.org/tmp-documentation">
+            <section xmlns="http://cellml.org/tmp-documentation" id="sec_status">
+                <title xmlns="http://cellml.org/tmp-documentation">Model Status</title>
+                <para xmlns="http://cellml.org/tmp-documentation">This version has had a stimulus protocol component added to allow the model to simulate multiple action potentials, has been unit checked and curated and is known to run in COR and PCEnv.</para>
+            </section>
+            <sect1 xmlns="http://cellml.org/tmp-documentation" id="sec_structure">
+                <title xmlns="http://cellml.org/tmp-documentation">Model Structure</title>
+                <para xmlns="http://cellml.org/tmp-documentation">In a series of papers published in 1952, A.L. Hodgkin and A.F. Huxley presented the results of a series of experiments in which they investigated the flow of electric current through the surface membrane of the giant nerve fibre of a squid. In the summary paper of the Hodgkin and Huxley model, the authors developed a mathematical description of the behaviour of the membrane based upon these experiments, which accounts for the conduction and excitation of the fibre. The form of this description has been used as the basis for almost all other ionic current models of excitable tissues, including Purkinje fibres and cardiac atrial and ventricular muscle.</para>
+                <para xmlns="http://cellml.org/tmp-documentation">The summary paper is cited below:</para>
+                <para xmlns="http://cellml.org/tmp-documentation">
+          A Quantitative Description of Membrane Current and its Application to Conduction and Excitation in Nerve, A. L. Hodgkin and A. F. Huxley, 1952,
+          <emphasis xmlns="http://cellml.org/tmp-documentation">The Journal of Physiology</emphasis>
+          , 117, 500-544.
+          <ulink xmlns="http://cellml.org/tmp-documentation" url="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=pubmed&amp;cmd=Retrieve&amp;dopt=AbstractPlus&amp;list_uids=12991237&amp;query_hl=1&amp;itool=pubmed_docsum">PubMed ID: 12991237</ulink>
+                </para>
+                <informalfigure xmlns="http://cellml.org/tmp-documentation" float="0" id="fig_circuit_diagram">
+                    <mediaobject xmlns="http://cellml.org/tmp-documentation">
+                        <imageobject xmlns="http://cellml.org/tmp-documentation">
+                            <objectinfo xmlns="http://cellml.org/tmp-documentation">
+                                <title xmlns="http://cellml.org/tmp-documentation">Electrical circuit describing the current across the cell membrane</title>
+                            </objectinfo>
+                            <imagedata xmlns="http://cellml.org/tmp-documentation" fileref="hodgkin_1952.png"/>
+                        </imageobject>
+                    </mediaobject>
+                    <caption xmlns="http://cellml.org/tmp-documentation">A schematic cell diagram describing the current flows across the cell membrane that are captured in the Hodgkin Huxley model.</caption>
+                </informalfigure>
+            </sect1>
+        </article>
+    </documentation>
+    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel.E_R">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Maximum plasma membrane rest potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://www.cellml.org/cellml/1.0#hodgkin_huxley_squid_axon_1952">
+            <j.0:Pubmed_id xmlns:j.0="http://www.cellml.org/bqs/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">12991237</j.0:Pubmed_id>
+            <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">The Classic Hodgkin-Huxley 1952 Model of A Squid Axon.</dc:title>
+            <cmeta:comment xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#66bca445-cdee-4030-81ee-ed5b822bf666">
+                    <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#6d8cd909-915e-4a88-96ee-33dcda056c46">
+                            <vcard:FN xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Warren Hedley</vcard:FN>
+                        </rdf:Description>
+                    </dc:creator>
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">This is the CellML description of Hodgkin and Huxley's inspirational work on a mathematical description of currents through the membrane of a nerve fibre (axon) in a giant squid, and their application to the modelling of excitation in the nerve. It is generally regarded as the first example of a mathematical model of biology.</rdf:value>
+                </rdf:Description>
+            </cmeta:comment>
+            <j.1:simulation xmlns:j.1="http://www.cellml.org/metadata/simulation/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#$Tpnot2">
+                    <j.1:boundIntervals xmlns:j.1="http://www.cellml.org/metadata/simulation/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#$Upnot2">
+                            <rdf:first xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#$Vpnot2">
+                                    <j.1:maximumStepSize xmlns:j.1="http://www.cellml.org/metadata/simulation/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">0.1</j.1:maximumStepSize>
+                                    <j.1:endingValue xmlns:j.1="http://www.cellml.org/metadata/simulation/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">30</j.1:endingValue>
+                                    <j.1:nonstandard-pointDensity xmlns:j.1="http://www.cellml.org/metadata/simulation/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">50000</j.1:nonstandard-pointDensity>
+                                </rdf:Description>
+                            </rdf:first>
+                            <rdf:rest xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                        </rdf:Description>
+                    </j.1:boundIntervals>
+                </rdf:Description>
+            </j.1:simulation>
+            <cmeta:species xmlns:cmeta="http://www.cellml.org/metadata/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Squid</cmeta:species>
+            <cmeta:bio_entity xmlns:cmeta="http://www.cellml.org/metadata/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Neuron</cmeta:bio_entity>
+            <j.0:reference xmlns:j.0="http://www.cellml.org/bqs/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#2f069a61-06ba-4782-a877-f31e770cdf0d">
+                    <j.0:Pubmed_id xmlns:j.0="http://www.cellml.org/bqs/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">12991237</j.0:Pubmed_id>
+                    <j.0:JournalArticle xmlns:j.0="http://www.cellml.org/bqs/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#6a5c1370-80c1-4b42-aead-44170b5e073e">
+                            <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">
+                                <rdf:Seq xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#5aa345d1-498a-40fe-852c-be5a6c19cb10">
+                                    <rdf:li xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                                        <j.0:Person xmlns:j.0="http://www.cellml.org/bqs/1.0#" rdf:about="rdf:#51a60dc9-2f70-4eb6-845a-1dafe7feb919" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#9402b850-7050-4483-9cc7-a84fe2f91be2">
+                                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Hodgkin</vcard:Family>
+                                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">A</vcard:Given>
+                                                    <vcard:Other xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">L</vcard:Other>
+                                                </rdf:Description>
+                                            </vcard:N>
+                                        </j.0:Person>
+                                    </rdf:li>
+                                    <rdf:li xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                                        <j.0:Person xmlns:j.0="http://www.cellml.org/bqs/1.0#" rdf:about="rdf:#3e67593e-eafa-479e-8369-1879d475ea1a" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#0f72a1b1-ef97-4005-ad81-81353e3383ef">
+                                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Huxley</vcard:Family>
+                                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">A</vcard:Given>
+                                                    <vcard:Other xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">F</vcard:Other>
+                                                </rdf:Description>
+                                            </vcard:N>
+                                        </j.0:Person>
+                                    </rdf:li>
+                                </rdf:Seq>
+                            </dc:creator>
+                            <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">A quantitative description of membrane current and its application to conductance and excitation in nerve</dc:title>
+                            <j.0:last_page xmlns:j.0="http://www.cellml.org/bqs/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">544</j.0:last_page>
+                            <j.0:volume xmlns:j.0="http://www.cellml.org/bqs/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">117</j.0:volume>
+                            <dcterms:issued xmlns:dcterms="http://purl.org/dc/terms/">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#957446e8-2852-4457-a3f6-0e87906f21b9">
+                                    <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">1952-01-01</dcterms:W3CDTF>
+                                </rdf:Description>
+                            </dcterms:issued>
+                            <j.0:first_page xmlns:j.0="http://www.cellml.org/bqs/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">500</j.0:first_page>
+                            <j.0:Journal xmlns:j.0="http://www.cellml.org/bqs/1.0#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#eee0af8e-5256-4021-9426-80fe492518bc">
+                                    <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Journal of Physiology</dc:title>
+                                </rdf:Description>
+                            </j.0:Journal>
+                        </rdf:Description>
+                    </j.0:JournalArticle>
+                </rdf:Description>
+            </j.0:reference>
+            <j.0:reference xmlns:j.0="http://www.cellml.org/bqs/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#c1c62bec-a4f9-4b41-91ab-bbc81d473192">
+                    <dc:subject xmlns:dc="http://purl.org/dc/elements/1.1/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#34d6c118-3d31-4355-90dc-a2cb5ef18374">
+                            <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                                <rdf:Bag xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#e9e44e76-9801-4440-a074-6509ae83c1b7">
+                                    <rdf:li xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Neuron</rdf:li>
+                                    <rdf:li xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">giant axon</rdf:li>
+                                    <rdf:li xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">electrophysiology</rdf:li>
+                                </rdf:Bag>
+                            </rdf:value>
+                            <j.0:subject_type xmlns:j.0="http://www.cellml.org/bqs/1.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">keyword</j.0:subject_type>
+                        </rdf:Description>
+                    </dc:subject>
+                </rdf:Description>
+            </j.0:reference>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel_n_gate.n">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Proportion of activating molecules inside of cell</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane_V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_1">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_5">
+                            <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/FMA_63841" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                        </rdf:Description>
+                    </semsim:physicalPropertyOf>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.h">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Proportion of activating molecules inside cell</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_h_gate.beta_h">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">H gate sodium ion transfer constant (in to out)</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_h_gate.h">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Proportion of activating molecules inside cell</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#leakage_current.E_L">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Ionic leakage equilibrium potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_h_gate.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_h_gate.alpha_h">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">H gate sodium ion transfer constant (out to in)</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel_n_gate.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#leakage_current.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_9">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_5" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.i_Na">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_3">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" dcterms:description="" rdf:about="#process_2" xmlns:dcterms="http://purl.org/dc/terms/">
+                            <semsim:hasMediatorParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#mediator_2">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_4">
+                                            <ro:part_of xmlns:ro="http://www.obofoundry.org/ro/ro.owl#">
+                                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_3">
+                                                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/FMA_5914" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                                </rdf:Description>
+                                            </ro:part_of>
+                                            <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/FMA_63841" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                        </rdf:Description>
+                                    </semsim:hasPhysicalEntityReference>
+                                </rdf:Description>
+                            </semsim:hasMediatorParticipant>
+                            <semsim:hasSinkParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sink_2" semsim:hasMultiplier="1.0" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_8">
+                                            <ro:part_of xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="#entity_3" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                            <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/CHEBI_29101" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                        </rdf:Description>
+                                    </semsim:hasPhysicalEntityReference>
+                                </rdf:Description>
+                            </semsim:hasSinkParticipant>
+                            <semsim:hasSourceParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#source_2" semsim:hasMultiplier="1.0" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_7">
+                                            <semsim:name xmlns:semsim="http://www.bhi.washington.edu/SemSim#">/08032015155118835m0500#Cell culture medium</semsim:name>
+                                        </rdf:Description>
+                                    </semsim:hasPhysicalEntityReference>
+                                </rdf:Description>
+                            </semsim:hasSourceParticipant>
+                            <semsim:name xmlns:semsim="http://www.bhi.washington.edu/SemSim#">Sodium current across plasma membrane</semsim:name>
+                        </rdf:Description>
+                    </semsim:physicalPropertyOf>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00318" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Sodium current across the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel.V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_11">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_4" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.E_R">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Maximum plasma membrane rest potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel.g_K">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Potassium conductance of the cell membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel.n">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Proportion of activating molecules inside of cell</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel_n_gate.V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_5">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_5" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#leakage_current.V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_7">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_5" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.g_Na">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Sodium conductance of the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.E_Na">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Sodium ion equilibrium potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.i_Stim">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Experimental charge stimulus.</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.m">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Proportion of inactivating molecules inside of cell</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_m_gate.time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#environment_time">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Time Domain</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_m_gate.beta_m">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">M gate sodium ion transfer constant (in to out)</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://www.cellml.org/cellml/1.0">
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#384803b0-d02a-414d-86fe-2ead34d6ede9">
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Correcting the equation for dv/dt.</rdf:value>
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#70448d97-7f25-4048-8bd3-da91d466bfd1">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2002-11-20</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#85f445d5-2b20-4a8a-937a-44890e1ccf00">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#9b923383-f1a8-48c7-b1ee-0ca41c08de54">
+                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Nickerson</vcard:Family>
+                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">David</vcard:Given>
+                                </rdf:Description>
+                            </vcard:N>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#70de1e12-eccf-4c2c-a514-a53a1018aeb3">
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Added stimulus protocol to allow simulation of trains of action potentials. The stimulus amplitude (20 microamperes per cm2) and duration (0.5 ms) were taken from the single stimulus in the previous version. Set a period of 200 ms (arbitrary) to allow visualisation of 3 action potentials together at a resonable zoom level.</rdf:value>
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#5bc4f7d2-1306-4281-88b5-a5afe628bc66">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2007-06-15T12:32:55+12:00</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#e897f342-e771-4ae3-876d-062dfdfccc88">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#56197c17-2399-482e-9645-a522ed0beb31">
+                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Lawson</vcard:Family>
+                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">James</vcard:Given>
+                                    <vcard:Other xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Richard</vcard:Other>
+                                </rdf:Description>
+                            </vcard:N>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#f0c9b743-d359-449c-ac0c-25d95cf30ee6">
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Correcting the equation for dv/dt.</rdf:value>
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#bd2a51c8-81c1-4015-8a10-a0ff312038a5">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2002-11-20</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#372d59c8-494a-409d-95e7-350b2ad6c199">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#645f2f0c-9134-420b-9177-df0862a7a1fc">
+                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Nickerson</vcard:Family>
+                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">David</vcard:Given>
+                                </rdf:Description>
+                            </vcard:N>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+            <cmeta:comment xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#5f502734-46d5-4a70-bd04-3e0f1d128044">
+                    <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#eee88e88-b221-451f-84ca-e2517ca582d7">
+                            <vcard:FN xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">James Lawson</vcard:FN>
+                        </rdf:Description>
+                    </dc:creator>
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">This version (07) has had a stimulus protocol component added (to version 06, by James Lawson, 15/06/07) to allow the model to simulate multiple action potentials. Version 05 was created by Penny Noble of Oxford University and is known to run in COR and PCEnv. The intial voltage membrane potential was changed from 0 mV to the correct value of -75 mV. (Version 06 is the same as version 05 but has updated documentation)</rdf:value>
+                </rdf:Description>
+            </cmeta:comment>
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#00da010f-7f66-47c5-89f7-a0d13ca1ddf4">
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Added more metadata.</rdf:value>
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#9ee1d23e-9cd8-45d8-8b8f-fcf480cf5c95">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2002-07-19</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#f9a8c5a9-bc9c-4b50-bdbe-e9e5956bc3bd">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#bde7bd97-4909-4ba8-8a80-7457d90944ff">
+                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Lloyd</vcard:Family>
+                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Catherine</vcard:Given>
+                                    <vcard:Other xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">May</vcard:Other>
+                                </rdf:Description>
+                            </vcard:N>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+            <dc:publisher xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">The University of Auckland, Bioengineering Institute</dc:publisher>
+            <dcterms:created xmlns:dcterms="http://purl.org/dc/terms/">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#665adec2-47bb-4f04-80a1-68f545e81a0e">
+                    <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2002-03-26T00:00:00+00:00</dcterms:W3CDTF>
+                </rdf:Description>
+            </dcterms:created>
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#11e3f403-75e7-4da6-9f6b-c5732c0cab1d">
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#140c4615-dbeb-4856-aa9c-68f554470dfa">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2007-06-20T16:01:50+12:00</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#b7d9bdf8-8ab9-4b18-903c-84dc2b140727">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" rdf:resource="rdf:#2513dee6-5449-443a-b035-2ff762ff3069" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#926f9f08-b397-491a-ac44-76e38b182232">
+                    <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Fixed the broken figure links.</rdf:value>
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#86821b4a-b64d-46a1-8aec-e3f4544cb540">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2007-06-14T07:38:16+12:00</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#d7dedc5f-038d-45c5-b191-69311c173c69">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#2db6628b-7f2e-4536-94e2-cbba185e47e3">
+                                    <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Lloyd</vcard:Family>
+                                    <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Catherine</vcard:Given>
+                                    <vcard:Other xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">May</vcard:Other>
+                                </rdf:Description>
+                            </vcard:N>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+            <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">A quantitative description of membrane current and its application to conduction and excitation in nerve (Original Model + Stimulus)</dc:title>
+            <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#110653f5-2489-488d-a6ed-8e8d5e1e49d0">
+                    <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#e64f82a7-a34d-4f8b-8e60-012dbf5ea240">
+                            <vcard:Family xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Lloyd</vcard:Family>
+                            <vcard:Given xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">Catherine</vcard:Given>
+                            <vcard:Other xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">May</vcard:Other>
+                        </rdf:Description>
+                    </vcard:N>
+                    <vcard:EMAIL xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                        <j.2:internet xmlns:j.2="http://imc.org/vCard/3.0#" rdf:about="rdf:#18be6072-0bb2-486b-bf47-d786a8ccb00a" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:value xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">c.lloyd@auckland.ac.nz</rdf:value>
+                        </j.2:internet>
+                    </vcard:EMAIL>
+                    <vcard:ORG xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#5f6a3f59-56b0-4c8f-9885-b8cf157290ef">
+                            <vcard:Orgunit xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">The Bioengineering Institute</vcard:Orgunit>
+                            <vcard:Orgname xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">The University of Auckland</vcard:Orgname>
+                        </rdf:Description>
+                    </vcard:ORG>
+                </rdf:Description>
+            </dc:creator>
+            <cmeta:modification xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#8fd18725-5764-4794-8857-23e4f6ce4b18">
+                    <dcterms:modified xmlns:dcterms="http://purl.org/dc/terms/">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#6875edb4-a9cd-4bb6-b8f9-03b2c7cc8124">
+                            <dcterms:W3CDTF xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">2007-06-15T12:32:55+12:00</dcterms:W3CDTF>
+                        </rdf:Description>
+                    </dcterms:modified>
+                    <cmeta:modifier xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="rdf:#18a9b9a3-ea24-4c7d-9df0-4f3663e434bd">
+                            <vcard:N xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#" rdf:resource="rdf:#3b0e83c3-4898-4081-84fa-85c0d2807054" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                        </rdf:Description>
+                    </cmeta:modifier>
+                </rdf:Description>
+            </cmeta:modification>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#leakage_current.g_L">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Ionic leak conductance of the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_m_gate.m">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Proportion of inactivating molecules inside of cell</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_i_Na">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_10">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#process_2" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00318" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Sodium current across the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_m_gate.V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_8">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_5" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.Cm">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Plasma membrane charge capacity</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel.E_R">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Maximum plasma membrane rest potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel_n_gate.beta_n">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">N gate potassium ion transfer constant (in to out)</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel_i_K">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_12">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#process_0">
+                            <semsim:hasMediatorParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#mediator_0">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_4" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                </rdf:Description>
+                            </semsim:hasMediatorParticipant>
+                            <semsim:hasSinkParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sink_0" semsim:hasMultiplier="1.0" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_2">
+                                            <ro:part_of xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="#entity_3" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                            <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/CHEBI_29103" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                        </rdf:Description>
+                                    </semsim:hasPhysicalEntityReference>
+                                </rdf:Description>
+                            </semsim:hasSinkParticipant>
+                            <semsim:hasSourceParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#source_0" semsim:hasMultiplier="1.0" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_0">
+                                            <ro:part_of xmlns:ro="http://www.obofoundry.org/ro/ro.owl#">
+                                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_1">
+                                                    <semsim:name xmlns:semsim="http://www.bhi.washington.edu/SemSim#">/08032015155118835m0500#Cell culture medium</semsim:name>
+                                                </rdf:Description>
+                                            </ro:part_of>
+                                            <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/CHEBI_29103" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                        </rdf:Description>
+                                    </semsim:hasPhysicalEntityReference>
+                                </rdf:Description>
+                            </semsim:hasSourceParticipant>
+                            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Potassium current across plasma membrane</dcterms:description>
+                            <semsim:name xmlns:semsim="http://www.bhi.washington.edu/SemSim#">Potassium current across plasma membrane</semsim:name>
+                        </rdf:Description>
+                    </semsim:physicalPropertyOf>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00318" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Potassium current across the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.i_L">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_2">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#process_1">
+                            <semsim:hasMediatorParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#mediator_1">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_4" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                </rdf:Description>
+                            </semsim:hasMediatorParticipant>
+                            <semsim:hasSinkParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sink_1" semsim:hasMultiplier="1.0" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_7" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                </rdf:Description>
+                            </semsim:hasSinkParticipant>
+                            <semsim:hasSourceParticipant xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#source_1" semsim:hasMultiplier="1.0" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                    <semsim:hasPhysicalEntityReference xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                                        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#entity_6">
+                                            <ro:part_of xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="#entity_3" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                            <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://purl.obolibrary.org/obo/CHEBI_39124" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                                        </rdf:Description>
+                                    </semsim:hasPhysicalEntityReference>
+                                </rdf:Description>
+                            </semsim:hasSourceParticipant>
+                            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Charge flow across the plasma membrane</dcterms:description>
+                            <semsim:name xmlns:semsim="http://www.bhi.washington.edu/SemSim#">Leak current across plasma membrane</semsim:name>
+                        </rdf:Description>
+                    </semsim:physicalPropertyOf>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00318" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Leakage current across the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#Hodgkin_Huxley_1952" semsim:modelId="hodgkin_huxley_squid_axon_1952" semsim:modelName="hodgkin_huxley_squid_axon_1952" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+            <semsim:AnnotatorName xmlns:semsim="http://www.bhi.washington.edu/SemSim#">Christopher Thompson</semsim:AnnotatorName>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#membrane.i_K">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_0">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#process_0" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00318" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Potassium current across the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_m_gate.alpha_m">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">M gate sodium ion transfer constant (out to in)</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#leakage_current.E_R">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Maximum plasma membrane rest potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel.E_K">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Potassium ion equilibrium potential</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#potassium_channel_n_gate.alpha_n">
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">N gate potassium ion transfer constant (out to in)</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#sodium_channel_h_gate.V">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_4">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#entity_5" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00411" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Displacement of the membrane potential from its resting value</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#leakage_current_i_L">
+            <semsim:isComputationalComponentFor xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+                <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#property_6">
+                    <semsim:physicalPropertyOf xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="#process_1" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                    <semsim:hasPhysicalDefinition xmlns:semsim="http://www.bhi.washington.edu/SemSim#" rdf:resource="http://identifiers.org/opb/OPB_00318" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                </rdf:Description>
+            </semsim:isComputationalComponentFor>
+            <dcterms:description xmlns:dcterms="http://purl.org/dc/terms/">Leakage current across the plasma membrane</dcterms:description>
+        </rdf:Description>
+        <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="#Hodgkin_Huxley_1952" semsim:modelName="Hodgkin_Huxley_1952" semsim:unknown="Hodgkin_Huxley_1952" xmlns:semsim="http://www.bhi.washington.edu/SemSim#">
+            <ro:modelOf xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/CL_0000786" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            <ro:compartmentOf xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/FMA_5914" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            <ro:compartmentOf xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/FMA_63841" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            <ro:located_in xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/FMA_5914" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            <ro:located_in xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/FMA_63841" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            <ro:compartmentOf xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/FMA_84666" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            <ro:located_in xmlns:ro="http://www.obofoundry.org/ro/ro.owl#" rdf:resource="http://purl.obolibrary.org/obo/FMA_84666" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+        </rdf:Description>
+    </rdf:RDF>
+</model>
