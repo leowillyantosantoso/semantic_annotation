@@ -14,7 +14,7 @@ LLM_PROVIDER = "claude"
 # Claude (Anthropic) settings.
 # Paste your Claude API key between the quotes below (remove it before committing),
 # or leave it empty to use the ANTHROPIC_API_KEY environment variable instead.
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "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")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "sk-ant-")
 CLAUDE_MODEL = "claude-opus-5-5"
 CLAUDE_EFFORT = "medium"  # low | medium | high | xhigh | max
 
@@ -37,7 +37,7 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 # LlamaParse (LlamaCloud) API key for Stage 1 paper extraction.
 # Prefer setting the environment variable:  export LLAMA_CLOUD_API_KEY="llx-..."
 # or paste your key between the quotes below (do not commit it to git).
-LLAMA_CLOUD_API_KEY = os.getenv("LLAMA_CLOUD_API_KEY", "llx-vm4XzyPe6xjBRuM29mtrYB3ReLIcmD7U7XkLXsZsoNzOrENd")
+LLAMA_CLOUD_API_KEY = os.getenv("LLAMA_CLOUD_API_KEY", "llx-")
 
 # LlamaParse tier: "fast" (no AI, no formulas), "cost_effective", "agentic", "agentic_plus".
 # "agentic" or higher is recommended so equations come back as LaTeX.
