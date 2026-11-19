@@ -1,42 +1,46 @@
-import sys
-from src.database import get_session, run_housekeeping
-from src.models import PipelineTask
-from src.pipeline import run_pipeline_for_task
+import argparse
+import os
+
+from config import MODELS
+from src.pipeline import run_stage1, run_stage2, run_stage3, run_stage4
+
 
 def main():
+    parser = argparse.ArgumentParser(description="Automated Semantic Annotation for CellML models")
+    parser.add_argument("--model", help="Only process this model (CellML file name without extension, e.g. hodgkin_huxley)")
+    parser.add_argument("--stage", choices=["1", "2", "3", "4", "all"], default="all",
+                        help="Stage to run: 1 (CellML + paper extraction), 2 (LLM synonyms + contexts), "
+                             "3 (biological process inference), 4 (ontology lookup with OLS), or all (default)")
+    parser.add_argument("--skip-pdf", action="store_true", help="Stage 1: only extract CellML variables; do not call LlamaParse")
+    args = parser.parse_args()
+
+    models = MODELS
+    if args.model:
+        models = [m for m in MODELS if os.path.splitext(m["cellml"])[0] == args.model]
+        if not models:
+            names = ", ".join(os.path.splitext(m["cellml"])[0] for m in MODELS)
+            parser.error(f"Unknown model '{args.model}'. Available: {names}")
+
     print("============================================================")
-    print("CELLML READER PIPELINE (DATABASE RUN)")
+    print("AUTOMATED SEMANTIC ANNOTATION FOR CELLML MODELS")
     print("============================================================")
-    
-    # 1. Run housekeeping to clear data older than 7 days
-    try:
-        run_housekeeping(days=7)
-    except Exception as e:
-        print(f"[Warning] Housekeeping failed: {e}")
 
-    # 2. Get pending or failed tasks from database
-    with get_session() as session:
-        tasks = session.query(PipelineTask).filter(
-            PipelineTask.status.in_(["pending", "failed"])
-        ).order_by(PipelineTask.id).all()
-        
-        task_ids = [t.id for t in tasks]
-
-    if not task_ids:
-        print("No pending or failed tasks found in database. Exiting.")
-        return
-
-    print(f"Found {len(task_ids)} active tasks in database to process.")
-
-    # 3. Process each task sequentially
-    for idx, task_id in enumerate(task_ids):
-        print(f"\nProcessing Task {idx+1}/{len(task_ids)} (ID: {task_id})...")
+    for idx, model in enumerate(models):
+        print(f"\nModel {idx + 1}/{len(models)}: {model['cellml']}")
         try:
-            run_pipeline_for_task(task_id)
+            if args.stage in ("1", "all"):
+                run_stage1(model, skip_pdf=args.skip_pdf)
+            if args.stage in ("2", "all") and not args.skip_pdf:
+                run_stage2(model)
+            if args.stage in ("3", "all") and not args.skip_pdf:
+                run_stage3(model)
+            if args.stage in ("4", "all") and not args.skip_pdf:
+                run_stage4(model)
         except Exception as e:
-            print(f"ERROR processing Task {task_id}: {e}")
+            print(f"ERROR processing {model['cellml']}: {e}")
 
-    print("\nAll pipeline tasks processed!")
+    print("\nDone. Results are in the output/ folder.")
+
 
 if __name__ == "__main__":
     main()

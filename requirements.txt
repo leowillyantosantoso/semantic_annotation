@@ -1,0 +1,9 @@
+libcellml>=0.6.3
+requests>=2.31     # Stage 4: OLS ontology lookup
+llama-cloud>=2.16.0
+
+# Stage 2-3 LLM providers (LLM_PROVIDER in config.py). Only the one you use is needed.
+anthropic>=2.3.0   # "claude"
+openai>=2.0.0      # "openai" (ChatGPT)
+ollama>=0.4.0      # "ollama" (free local models)
+                   # The Ollama app itself is installed separately, see README.md

@@ -4,26 +4,76 @@ Project Configuration
 
 import os
 
-# Model LLM
-MODEL_NAME = "qwen2.5:7b"
+# LLM used in Stage 2 (synonyms) and Stage 3 (biological process inference):
+#   "claude" - Anthropic Claude API (paid, needs ANTHROPIC_API_KEY)
+#   "openai" - OpenAI ChatGPT API   (paid, needs OPENAI_API_KEY)
+#   "ollama" - free local model through Ollama (no API key; see README)
+# Each provider keeps its own caches: output/<model>/<provider>_synonyms.json, <provider>_process.json
+LLM_PROVIDER = "claude"
 
-# Path dasar
+# Claude (Anthropic) settings.
+# Paste your Claude API key between the quotes below (remove it before committing),
+# or leave it empty to use the ANTHROPIC_API_KEY environment variable instead.
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+CLAUDE_MODEL = "claude-opus-5-5"
+CLAUDE_EFFORT = "medium"  # low | medium | high | xhigh | max
+
+# Stage 2: for variables with no sentence or equation in the paper, ask the LLM to describe
+# the variable from its formula. Saved as "inferred_description" (not as a context), cached in
+# output/<model>/<provider>_inferred.json. Set to False to skip these extra LLM calls.
+INFER_MISSING_CONTEXT = True
+
+# OpenAI (ChatGPT) settings.
+# Paste your OpenAI API key between the quotes below (remove it before committing),
+# or leave it empty to use the OPENAI_API_KEY environment variable instead.
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = "gpt-5"  # any model that supports structured outputs, e.g. "gpt-5-mini"
+
+# Ollama (free, local) settings. Download the model first:  ollama pull llama3.3:70b
+# llama3.3:70b needs ~43 GB of memory; on smaller machines use e.g. "llama3.1:8b" or "qwen2.5:7b".
+OLLAMA_MODEL = "llama3.3:70b"
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+# LlamaParse (LlamaCloud) API key for Stage 1 paper extraction.
+# Prefer setting the environment variable:  export LLAMA_CLOUD_API_KEY="llx-..."
+# or paste your key between the quotes below (do not commit it to git).
+LLAMA_CLOUD_API_KEY = os.getenv("LLAMA_CLOUD_API_KEY", "")
+
+# LlamaParse tier: "fast" (no AI, no formulas), "cost_effective", "agentic", "agentic_plus".
+# "agentic" or higher is recommended so equations come back as LaTeX.
+LLAMAPARSE_TIER = "agentic"
+
+# Base paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
-# Path ontologi
-CHEBI_OBO = os.path.join(BASE_DIR, "ontology", "chebi.obo")
-GO_OBO = os.path.join(BASE_DIR, "ontology", "go.obo")
+# Unit selection: a CellML variable is extracted when its units are compatible (libcellml)
+# with any baseline unit that rdf_unit_cellml.ttl maps to TARGET_OPB.
+UNITS_TTL = os.path.join(BASE_DIR, "src", "rdf_unit_cellml.ttl")
+BASELINE_UNITS = os.path.join(BASE_DIR, "src", "baseline_units.cellml")
+TARGET_OPB = "OPB_00318"  # Charge flow rate: C_per_m3_s, C_per_m2_s, C_per_m_s, fA
+# Energy differential (voltage): read_energy_differentials() selects the voltage that drives each
+# gating variable, e.g. sodium_channel_m_gate.V in Hodgkin-Huxley
+ENERGY_DIFFERENTIAL_OPB = "OPB_00506"  # mV
 
-# Daftar model yang akan diproses
-# Setiap item: (file_cellml, file_pdf, paper_title)
+# Stage 4: ontologies searched through OLS (https://www.ebi.ac.uk/ols4), in order of preference
+ONTOLOGIES = {
+    "chemical": ["chebi"],
+    "compartment": ["fma", "go"],  # FMA has no dyadic space or junctional/network SR; GO is the fallback
+    "mediator": ["go"],
+}
+# OLS answers, shared by all models (delete to search again)
+OLS_CACHE = os.path.join(OUTPUT_DIR, "ols_cache.json")
+
+# List of models to process
+# Each item: (cellml file, pdf file, paper_title)
 MODELS = [
-    # {
-    #     "cellml": "hodgkin_huxley.cellml",
-    #     "pdf": "hodgkin_huxley.pdf",
-    #     "paper_title": "A quantitative description of membrane current and its application to conduction and excitation in nerve"
-    # },
+    {
+        "cellml": "hodgkin_huxley.cellml",
+        "pdf": "hodgkin_huxley.pdf",
+        "paper_title": "A quantitative description of membrane current and its application to conduction and excitation in nerve"
+    },
     {
         "cellml": "jafri_rice_winslow_1998.cellml",
         "pdf": "jafri_rice_winslow_1998.pdf",
@@ -39,14 +89,39 @@ MODELS = [
         "pdf": "luo_rudy_1994.pdf",
         "paper_title": "A dynamic model of the cardiac ventricular action potential"
     },
-    # {
-    #     "cellml": "luo_rudy_1991.cellml",
-    #     "pdf": "luo_rudy_1991.pdf",
-    #     "paper_title": "A model of the ventricular cardiac action potential"
-    # },
+    {
+        "cellml": "luo_rudy_1991.cellml",
+        "pdf": "luo_rudy_1991.pdf",
+        "paper_title": "A model of the ventricular cardiac action potential"
+    },
     {
         "cellml": "difrancesco_noble.cellml",
         "pdf": "difrancesco_noble.pdf",
         "paper_title": "A model of cardiac electrical activity incorporating ionic pumps and concentration changes"
+    },
+    {
+        "cellml": "noble_varghese_kohl_noble_1998.cellml",
+        "pdf": "noble_varghese_kohl_noble_1998.pdf",
+        "paper_title": "Improved guinea-pig ventricular cell model incorporating a diadic space, IKr and IKs, and length- and tension-dependent processes"
+    },
+    {
+        "cellml": "tentusscher_noble_noble_panfilov_2004.cellml",
+        "pdf": "tentusscher_noble_noble_panfilov_2004.pdf",
+        "paper_title": "A model for human ventricular tissue"
+    },
+    {
+        "cellml": "beeler_reuter_1977.cellml",
+        "pdf": "beeler_reuter_1977.pdf",
+        "paper_title": "Reconstruction of the action potential of ventricular myocardial fibres"
+    },
+    {
+        "cellml": "chang_fujita_1999.cellml",
+        "pdf": "chang_fujita_1999.pdf",
+        "paper_title": "A numerical model of the renal distal tubule"
+    },
+    {
+        "cellml": "mcallister_noble_tsien_1975.cellml",
+        "pdf": "mcallister_noble_tsien_1975.pdf",
+        "paper_title": "Reconstruction of the electrical activity of cardiac Purkinje fibres"
     },
 ]
